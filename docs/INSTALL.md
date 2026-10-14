@@ -6,17 +6,30 @@
 
 gcommit 的依赖只安装在工具自身的全局目录。目标项目可以不是 Node 项目，不需要 package.json、node_modules 或项目内配置。运行 gcommit 不需要 Python；开发者运行 PTY 验收才需要 Python 3。
 
-当前是私有开发包 `0.1.0-dev.8`，未发布到 npm。请使用本仓库生成的 tarball，不要执行 `pnpm add -g gcommit-cli` 从公共 registry 查找同名包。
+当前版本为 `1.0.0`，以私有安装包分发，未发布到 npm。请使用本仓库生成的 tarball，不要执行 `pnpm add -g gcommit-cli` 从公共 registry 查找同名包。
+
+## 从安装包全局安装
+
+在下载的 `gcommit.tgz` 所在目录执行：
+
+```bash
+pnpm add -g ./gcommit.tgz --ignore-scripts
+gcommit --version
+```
+
+`--ignore-scripts` 跳过安装脚本，当前包已包含编译结果；也可省略该参数。安装后的版本来自包内 `package.json`，不由文件名决定。
 
 ## 从源码全局安装
+
+`tests/` 按仓库约定仅保留在本地，不随 Git 分发；下面的检查命令需要完整测试目录。仅使用工具时优先安装已验收的安装包。
 
 在 **gcommit-cli 自己的目录**执行。先确认 `node --version` 至少是 24、`pnpm --version` 是 12.5.1：
 
 ```bash
 pnpm install --frozen-lockfile
 pnpm check
-pnpm pack
-pnpm add -g ./gcommit-cli-0.1.0-dev.8.tgz --ignore-scripts
+pnpm pack --out gcommit.tgz
+pnpm add -g ./gcommit.tgz --ignore-scripts
 pnpm bin -g
 type -a gcommit
 gcommit --version
@@ -25,7 +38,7 @@ gcommit --help
 
 tarball 已包含编译结果，全局安装不需要再运行构建脚本。运行依赖仍需由 pnpm 安装；首次安装可能访问 registry，需要正常网络。固定的直接依赖版本不等于冻结所有传递依赖；本地 tarball 安装不会使用源码的锁文件来锁住整个全局依赖树。
 
-`type -a gcommit` 显示的首个路径应位于 `pnpm bin -g` 输出的目录，版本应为 `0.1.0-dev.8`。这一步用于发现旧安装、alias 或另一个 Node 环境中的同名命令。不要在确认路径前删除其他命令。
+`type -a gcommit` 显示的首个路径应位于 `pnpm bin -g` 输出的目录，版本应为 `1.0.0`。这一步用于发现旧安装、alias 或另一个 Node 环境中的同名命令。不要在确认路径前删除其他命令。
 
 安装完成后，可先在任意目录运行 `gcommit model` 选择并保存模型与档位，再到项目中生成：
 
@@ -52,7 +65,7 @@ gcommit
 ## 升级
 
 1. 更新 gcommit-cli 的源码；在该目录执行 `pnpm install --frozen-lockfile` 和 `pnpm release:check`。
-2. 执行 `pnpm pack`，使用实际新版本文件名安装：`pnpm add -g /absolute/path/to/new-package.tgz --ignore-scripts`。
+2. 执行 `pnpm pack --out gcommit.tgz`，在当前目录安装：`pnpm add -g ./gcommit.tgz --ignore-scripts`。短文件名不决定版本，安装后须核对包内版本。旧包按版本分别保留，避免被新包覆盖。
 3. 新开终端，用 `type -a gcommit` 和 `gcommit --version` 确认运行的是新包，再到合适的 Git 仓库执行 `gcommit -d`。
 
 升级不会修改 `~/.gcommit/config.json`。当前版本没有配置迁移器；新版本如果改变配置协议，须在变更记录中明确迁移方式。保留上一个已验证 tarball，可以用相同安装命令恢复该包版本；配置不兼容时须按相应版本说明处理。

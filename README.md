@@ -1,6 +1,8 @@
-# gcommit-cli
+# gcommit
 
 通过本机已安装、已登录的 Codex CLI 生成 Git 提交建议。工具独立安装，目标 Git 项目不需要安装任何依赖。
+
+当前版本 `1.0.0`，Git 版本标签使用 `v1.0.0`，分发安装包统一命名为 `gcommit.tgz`。包名和仓库名仍为 `gcommit-cli`，终端命令为 `gcommit`。
 
 ## 当前状态
 
@@ -30,8 +32,8 @@ node dist/cli.js --version
 ```bash
 pnpm install --frozen-lockfile
 pnpm check
-pnpm pack
-pnpm add -g ./gcommit-cli-0.1.0-dev.8.tgz --ignore-scripts
+pnpm pack --out gcommit.tgz
+pnpm add -g ./gcommit.tgz --ignore-scripts
 type -a gcommit
 gcommit --version
 ```

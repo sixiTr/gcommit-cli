@@ -17,4 +17,5 @@
 - 修改配置、进程或 Git 行为需要行为测试；使用临时仓库和本地 bare remote，不向真实远程做测试推送。
 - 完成模块前运行 `pnpm check`；打包后验证脱离源码工作目录运行。未通过的检查和未支持的平台要如实报告。
 - 完整终端验收使用 `pnpm test:e2e`（macOS arm64 + Python 3 标准库），默认 Codex 替身；`test:codex:live`、`test:dry-run:live`、`test:e2e:live` 才使用真实登录与合成输入，须显式运行。不得把模拟平台参数测试当作实机验收，详见 `docs/ACCEPTANCE.md`。
+- 版本使用三段数字，Git 标签以 v 为前缀；对外安装包统一通过 `pnpm pack --out gcommit.tgz` 生成，按版本独立归档。包名和仓库名保持 gcommit-cli，终端命令为 gcommit。
 - 本地分发使用 `pnpm pack` 生成的 tarball；发布前运行 `pnpm release:check`，覆盖普通检查、源码 PTY、包内容与隔离全局安装/升级/卸载和安装包 PTY。`test:install` 可访问 registry，但不调用真实模型或更改日常全局环境。保留私有包限制，公开发布须单独授权；详情见 `docs/INSTALL.md`、`docs/RELEASE.md`。
