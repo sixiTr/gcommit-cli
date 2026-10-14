@@ -6,7 +6,7 @@
 
 gcommit 的依赖只安装在工具自身的全局目录。目标项目可以不是 Node 项目，不需要 package.json、node_modules 或项目内配置。运行 gcommit 不需要 Python；开发者运行 PTY 验收才需要 Python 3。
 
-当前版本为 `1.0.0`，以私有安装包分发，未发布到 npm。请使用本仓库生成的 tarball，不要执行 `pnpm add -g gcommit-cli` 从公共 registry 查找同名包。
+当前版本为 `1.0.2`，以私有安装包分发，未发布到 npm。请使用本仓库生成的 tarball，不要执行 `pnpm add -g gcommit-cli` 从公共 registry 查找同名包。
 
 ## 从安装包全局安装
 
@@ -38,7 +38,7 @@ gcommit --help
 
 tarball 已包含编译结果，全局安装不需要再运行构建脚本。运行依赖仍需由 pnpm 安装；首次安装可能访问 registry，需要正常网络。固定的直接依赖版本不等于冻结所有传递依赖；本地 tarball 安装不会使用源码的锁文件来锁住整个全局依赖树。
 
-`type -a gcommit` 显示的首个路径应位于 `pnpm bin -g` 输出的目录，版本应为 `1.0.0`。这一步用于发现旧安装、alias 或另一个 Node 环境中的同名命令。不要在确认路径前删除其他命令。
+`type -a gcommit` 显示的首个路径应位于 `pnpm bin -g` 输出的目录，版本应为 `1.0.2`。这一步用于发现旧安装、alias 或另一个 Node 环境中的同名命令。不要在确认路径前删除其他命令。
 
 安装完成后，可先在任意目录运行 `gcommit model` 选择并保存模型与档位，再到项目中生成：
 

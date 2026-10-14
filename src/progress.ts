@@ -7,7 +7,7 @@ const STAGES = [
   { id: 'git', label: '读取并复核 Git 变更' },
   { id: 'context', label: '过滤并准备上下文' },
   { id: 'codex-check', label: '检查 Codex 环境' },
-  { id: 'codex-generate', label: '等待 Codex 生成建议' },
+  { id: 'codex-generate', label: '等待 Codex 返回建议' },
   { id: 'validate', label: '校验建议与仓库状态' },
 ] as const;
 /** 可观察的生成阶段。 */
@@ -102,7 +102,7 @@ export const createAnalysisProgress = (
     const elapsed: number = now - entered;
     const label: string =
       current === 'codex-generate' && elapsed >= 30000
-        ? '[4/5] 仍在等待 Codex 返回'
+        ? '[4/5] 仍在等待 Codex 调用完成'
         : title(current);
     const indicator: string = animated
       ? (['◐', '◓', '◑', '◒'][frame++ % 4] ?? '…')
@@ -182,7 +182,7 @@ export const createAnalysisProgress = (
         );
       for (const [stage, name] of [
         ['codex-check', 'Codex 检查'],
-        ['codex-generate', 'Codex 生成'],
+        ['codex-generate', 'Codex 调用（含网络等待与模型生成）'],
         ['validate', '校验'],
       ] as const) {
         const elapsed: number | undefined = durations.get(stage);

@@ -54,6 +54,16 @@ style=conventional: format=conventional, choose type from feat/fix/update/refact
 Use update for routine changes to existing behavior or content; prefer feat for new features and fix for bug fixes.
 style=repository: format=repository, type=null, scope=null, use the complete title in subject following history style. Do not copy historical facts.
 style=auto: follow clear history style; otherwise use conventional. Keep subject concise (at most 120 characters). body is up to 8 concise single-line points without bullet markers; [] is allowed.
+Write for a project maintainer who has not read the diff. Describe the action, affected object and concrete changed behavior; include the triggering condition when it matters.
+Use plain, specific language. Explain abstract labels such as mutual exclusion, isolation or recovery through the actual behavior instead of stacking these labels. Keep familiar technical terms when they are more precise.
+Focus the subject on the main change. Body points add distinct, useful details without repeating the title, listing every implementation detail or padding to a target count. A simple change can have an empty body. History guides format and language, not vague wording.
+Preserve the scope, conditions and uncertainty shown by the evidence. A page-level lock is not system-wide concurrency protection; ignoring stale responses is not cross-account data isolation; cancelling a request does not prove a server-side rollback. Querying after an uncertain write does not prove the write succeeded and must not be described as retrying that write.
+Distinguish implemented behavior, added tests and documented plans. Test code alone does not prove tests passed; documentation or TODOs alone do not prove a feature was implemented. Do not invent benefits, guarantees or business reasons to make the wording clearer.
+Style examples only, never facts to copy into the suggestion; use such wording only when the supplied changes establish the same behavior and conditions, and translate it to the requested language:
+- Instead of "写入互斥", describe "保存期间禁用本页其他修改操作" when that is the actual scope and condition.
+- Instead of "离页确认", describe "有未保存内容时，离开页面前提示确认放弃".
+- Instead of "会话隔离", describe "登录失效后，忽略旧请求返回的结果" when the change handles that case.
+- Instead of "写入结果不明时仅查询恢复", describe "无法确认保存是否成功时，重新查询列表供用户核对，禁止直接重复提交".
 Metadata-only files have no content evidence: describe only their existence, change kind or mode, never their implementation.
 [REDACTED] hides credentials; do not reproduce, reconstruct or guess hidden values. Redaction may hide the only changed characters.
 Text files contain unified diff hunks: oldStart/oldLines refer to HEAD, newStart/newLines to the final working tree. Each line begins with space (unchanged), - (removed), or + (added); a backslash-prefixed marker records a missing final newline. Three surrounding lines are normally retained. Every changed line is included; only identical lines outside the hunks may be omitted (omittedUnchangedLines). mode=trimmed means some unchanged lines were omitted; mode=full means all text is represented. An empty hunk list may still represent a file creation, deletion or mode change: consult metadata. Complex comparisons may retain entire before/after text as one conservative hunk. Analyze all files together in one suggestion.

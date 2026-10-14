@@ -195,7 +195,7 @@ export const runCodex = async <Schema extends z.ZodType>(
       if (error.code === 'PROCESS_EXIT_FAILED')
         throw new GcommitError(
           'CODEX_EXEC_FAILED',
-          'Codex 调用失败，请检查登录、网络和模型配置。',
+          `Codex 进程异常退出${error.exitCode === undefined ? '' : `（退出码 ${error.exitCode}）`}，未完成本次分析。`,
           error.exitCode,
         );
       if (error.code === 'PROCESS_CANCELLED')

@@ -78,6 +78,8 @@ export const validateCodexEvents = (text: string, output: string): void => {
   let started: boolean = false;
   let completed: boolean = false;
   let message: string | undefined;
+  // 中途错误只有在本轮最终成功且结果完整一致时才可恢复。
+  let interrupted: boolean = false;
   try {
     for (const line of text.trim().split('\n')) {
       const event = eventSchema.parse(JSON.parse(line));
@@ -91,15 +93,26 @@ export const validateCodexEvents = (text: string, output: string): void => {
         started = true;
         continue;
       }
-      if (
-        event.type === 'turn.failed' ||
-        event.type === 'error' ||
-        event.item?.type === 'error'
-      )
+      if (event.type === 'turn.failed')
         throw new GcommitError(
           'CODEX_EXEC_FAILED',
-          'Codex 未能完成本次分析，请检查登录、网络与模型配置。',
+          'Codex 报告本次分析最终失败，未采用本次结果。',
         );
+      if (event.item?.type === 'error')
+        throw new GcommitError(
+          'CODEX_EXEC_FAILED',
+          'Codex 返回了失败条目，未采用本次结果。',
+        );
+      // 顶层 error 是中途通知；不靠错误原文猜测网络、认证或可恢复性。
+      if (event.type === 'error' && event.item === undefined) {
+        if (!started)
+          throw new GcommitError(
+            'CODEX_EXEC_FAILED',
+            'Codex 在分析开始前报告错误，未采用本次结果。',
+          );
+        interrupted = true;
+        continue;
+      }
       if (started && event.type === 'turn.completed') {
         completed = true;
         continue;
@@ -128,14 +141,19 @@ export const validateCodexEvents = (text: string, output: string): void => {
     if (error instanceof GcommitError) throw error;
     throw new GcommitError('CODEX_RESPONSE_INVALID', 'Codex 事件流格式无效。');
   }
-  if (
-    !started ||
-    !completed ||
-    message === undefined ||
-    message.trimEnd() !== output.trimEnd()
-  )
+  if (interrupted && !completed)
+    throw new GcommitError(
+      'CODEX_EXEC_FAILED',
+      'Codex 中途报告错误，且未收到成功结束事件，未采用本次结果。',
+    );
+  if (!started || !completed || message === undefined)
     throw new GcommitError(
       'CODEX_RESPONSE_INVALID',
-      'Codex 返回了不完整或不一致的结果。',
+      'Codex 未返回完整的成功结束事件或建议消息。',
+    );
+  if (message.trimEnd() !== output.trimEnd())
+    throw new GcommitError(
+      'CODEX_RESPONSE_INVALID',
+      'Codex 建议消息与结果文件不一致，未采用本次结果。',
     );
 };

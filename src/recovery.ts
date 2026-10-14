@@ -128,7 +128,7 @@ export const recoveryAdvice = (error: unknown): readonly string[] => {
       ];
     case 'CODEX_EXEC_FAILED':
       return [
-        '检查本机 Codex 登录、网络、服务与模型配置；恢复后可自行重新生成，工具不会自动重试。',
+        '检查本机 Codex 登录、网络、服务与模型配置后自行重新生成；gcommit 不会额外发起分析请求。',
       ];
     case 'CODEX_RESPONSE_INVALID':
     case 'ANALYSIS_RESPONSE_INVALID':
