@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.test-build/
+.superpowers/
+pnpm-lock.yaml
+*.tgz
+.claude/settings.local.json

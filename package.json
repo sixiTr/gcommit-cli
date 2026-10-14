@@ -1,0 +1,58 @@
+{
+  "name": "gcommit-cli",
+  "version": "0.1.0-dev.8",
+  "description": "通过本机 Codex CLI 生成 Git 提交建议的独立命令行工具",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "bin": {
+    "gcommit": "./dist/cli.js"
+  },
+  "files": [
+    "dist/**/*.js",
+    "README.md",
+    "CHANGELOG.md",
+    "docs/INSTALL.md",
+    "docs/RELEASE.md",
+    "docs/ACCEPTANCE.md",
+    "docs/CODEX_ISOLATION.md",
+    "docs/DRY_RUN.md",
+    "docs/INTERACTION.md",
+    "docs/COMMIT.md",
+    "docs/PUSH.md",
+    "docs/TROUBLESHOOTING.md"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@12.5.1",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "pnpm build && tsc -p tsconfig.test.json && node --test .test-build/tests/*.test.js",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "pnpm typecheck && pnpm format:check && pnpm test",
+    "prepack": "pnpm build",
+    "test:codex:isolation": "pnpm build && tsc -p tsconfig.test.json && node --test .test-build/tests/codex-isolation.integration.js",
+    "test:codex:live": "pnpm build && tsc -p tsconfig.test.json && node --test .test-build/tests/codex-live.integration.js",
+    "test:dry-run:live": "pnpm build && tsc -p tsconfig.test.json && node --test .test-build/tests/dry-run-live.integration.js",
+    "test:e2e": "pnpm build && tsc -p tsconfig.test.json && node --test .test-build/tests/cli-e2e.integration.js .test-build/tests/acceptance-safety.integration.js",
+    "test:e2e:live": "pnpm build && tsc -p tsconfig.test.json && node --test .test-build/tests/cli-live.integration.js",
+    "test:package": "pnpm build && tsc -p tsconfig.test.json && node --test .test-build/tests/package.integration.js",
+    "test:install": "pnpm build && tsc -p tsconfig.test.json && node --test .test-build/tests/install.integration.js",
+    "release:check": "pnpm check && pnpm test:e2e && pnpm test:package && pnpm test:install"
+  },
+  "dependencies": {
+    "@clack/prompts": "1.8.1",
+    "diff": "9.0.0",
+    "execa": "10.1.0",
+    "smol-toml": "1.9.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "prettier": "3.9.10",
+    "typescript": "7.0.2"
+  }
+}

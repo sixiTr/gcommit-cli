@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.test-build/
+.superpowers/
+*.tgz
+.DS_Store
+.env
+.env.*
+.claude/settings.local.json
+tests/

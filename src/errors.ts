@@ -1,0 +1,75 @@
+/** 可对外展示的稳定错误类别白名单。 */
+export const ERROR_CODES = [
+  'ARGUMENT_INVALID',
+  'INTERACTION_TTY_REQUIRED',
+  'INTERACTION_EDIT_INVALID',
+  'ANALYSIS_CONTEXT_LIMIT',
+  'ANALYSIS_SENSITIVE_FILE',
+  'ANALYSIS_SENSITIVE_CONTENT',
+  'ANALYSIS_RESPONSE_INVALID',
+  'CONFIG_INVALID',
+  'CONFIG_READ_FAILED',
+  'CONFIG_WRITE_FAILED',
+  'CONFIG_CHANGED',
+  'PROCESS_SPAWN_FAILED',
+  'PROCESS_EXIT_FAILED',
+  'PROCESS_TIMEOUT',
+  'PROCESS_CANCELLED',
+  'PROCESS_OUTPUT_LIMIT',
+  'GIT_NOTHING_TO_COMMIT',
+  'GIT_STAGE_FAILED',
+  'GIT_COMMIT_ABORTED',
+  'GIT_COMMIT_FAILED',
+  'GIT_COMMIT_MISMATCH',
+  'GIT_COMMIT_UNCERTAIN',
+  'GIT_COMMIT_PLAN_USED',
+  'GIT_PUSH_UNSUPPORTED',
+  'GIT_PUSH_CHANGED',
+  'GIT_PUSH_FAILED',
+  'GIT_PUSH_PLAN_USED',
+  'GIT_UNAVAILABLE',
+  'GIT_NOT_REPOSITORY',
+  'GIT_COMMAND_FAILED',
+  'GIT_DATA_INVALID',
+  'GIT_PATH_UNSUPPORTED',
+  'GIT_DETACHED_HEAD',
+  'GIT_STATE_BLOCKED',
+  'GIT_INDEX_LOCKED',
+  'GIT_IDENTITY_INVALID',
+  'GIT_UNSUPPORTED_STATE',
+  'GIT_CONTEXT_LIMIT',
+  'GIT_CONTEXT_CHANGED',
+  'GIT_FILE_UNSUPPORTED',
+  'CODEX_UNAVAILABLE',
+  'CODEX_UNSUPPORTED',
+  'CODEX_NOT_AUTHENTICATED',
+  'CODEX_AUTH_CONFIG_INVALID',
+  'CODEX_MODEL_UNSUPPORTED',
+  'CODEX_REQUEST_INVALID',
+  'CODEX_EXEC_FAILED',
+  'CODEX_TIMEOUT',
+  'CODEX_CANCELLED',
+  'CODEX_OUTPUT_LIMIT',
+  'CODEX_RESPONSE_INVALID',
+  'CODEX_ISOLATION_FAILED',
+  'CODEX_TEMP_FAILED',
+  'FEATURE_UNAVAILABLE',
+] as const;
+/** 稳定错误类别。 */
+export type ErrorCode = (typeof ERROR_CODES)[number];
+
+/** 保存经过整理的错误信息，不附带原始配置或进程输出。 */
+export class GcommitError extends Error {
+  /** 稳定错误类别。 */
+  readonly code: ErrorCode;
+  /** 子进程退出码，启动失败时可能不存在。 */
+  readonly exitCode: number | undefined;
+
+  /** 创建可安全展示的错误。 */
+  constructor(code: ErrorCode, message: string, exitCode?: number) {
+    super(message);
+    this.name = 'GcommitError';
+    this.code = code;
+    this.exitCode = exitCode;
+  }
+}

@@ -1,0 +1,20 @@
+# gcommit-cli 开发约定
+
+- 这是独立 CLI，不依赖目标 Git 项目的语言、package.json、node_modules 或业务代码。
+- 已确认设计见 `docs/DESIGN.md`，实施进度见 `docs/PLAN.md`。按模块实施，不能把未接入的能力描述为可用。
+- 使用 Node.js 24+、TypeScript、ESM、pnpm；版本以 package.json 和 pnpm-lock.yaml 为准。
+- 核心边界：AI 只生成建议；CLI 执行 Git；用户最终确认。没有确认不能 add/commit/push；push 单独确认。
+- 子进程使用可执行文件与参数数组，禁用 shell 拼接；大上下文和提交消息通过 stdin。
+- `gcommit model` 是独立全局设置入口：只读本机 bundled 目录，不读 Git、不检查登录或执行生成；只原子保存 model/reasoningEffort，保留其他显式字段，取消不保存。模型与档位菜单必须复用目录校验，不写死选项。
+- 普通 `pnpm check` 包含模型设置 PTY 测试，需要 Python 3 标准库；工具运行不依赖 Python。
+- 模型不写死。权限隔离在真实 Codex 夹具中通过验证之前，不开放提交链路。
+- 本地读取预算与模型 Prompt 预算独立：maxFileBytes 单文件版本默认及最高 10 MiB，maxReadBytes 总量默认及最高 20 MiB；maxContextBytes 只控制模型 Prompt，默认 1 MiB、最高 8 MiB，不代表模型 token 容量。
+- 文本差异使用固定版本 diff 在内存计算 unified hunks，基于原文定位、整文件脱敏后取行；只省略未变行，不丢弃修改内容，不分批调用。差异计算超时保留完整前后文本，最终仍执行单次输入预算检查。
+- 敏感文件名和内容都需过滤；过滤 AI 上下文不等于排除 Git 提交。不得输出原始秘密、配置或完整子进程错误。
+- 不自动修复源码、绕过 Git hooks、stash/reset、强制推送或运行目标项目检查。
+- 类型放在所属模块；外部数据先校验。手写函数优先箭头函数，公开接口明确参数和返回类型，关键职责使用中文注释。
+- 不手改 pnpm-lock.yaml 或 dist。依赖按实际模块需要添加，不提前引入框架。
+- 修改配置、进程或 Git 行为需要行为测试；使用临时仓库和本地 bare remote，不向真实远程做测试推送。
+- 完成模块前运行 `pnpm check`；打包后验证脱离源码工作目录运行。未通过的检查和未支持的平台要如实报告。
+- 完整终端验收使用 `pnpm test:e2e`（macOS arm64 + Python 3 标准库），默认 Codex 替身；`test:codex:live`、`test:dry-run:live`、`test:e2e:live` 才使用真实登录与合成输入，须显式运行。不得把模拟平台参数测试当作实机验收，详见 `docs/ACCEPTANCE.md`。
+- 本地分发使用 `pnpm pack` 生成的 tarball；发布前运行 `pnpm release:check`，覆盖普通检查、源码 PTY、包内容与隔离全局安装/升级/卸载和安装包 PTY。`test:install` 可访问 registry，但不调用真实模型或更改日常全局环境。保留私有包限制，公开发布须单独授权；详情见 `docs/INSTALL.md`、`docs/RELEASE.md`。
