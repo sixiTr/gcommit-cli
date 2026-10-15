@@ -28,6 +28,23 @@ const ASSIGNMENT: RegExp = /\b([a-z_][\w-]{0,127})["']?[ \t]*[:=][ \t]*/giu;
 const SECRET_KEY: RegExp =
   /(?:password|passwd|pwd|(?:api|access|refresh|auth|client|private|secret)[_-]?(?:key|token|secret)|token|secret|authorization)$/iu;
 
+/** 识别带 HTTP 方法和 Api 前缀的接口响应模式映射，不按凭据字段推断其模式值。 */
+const isOperationMode = (
+  text: string,
+  key: string,
+  keyStart: number,
+  valueStart: number,
+): boolean =>
+  // 仅豁免双引号属性的固定模式值；普通 password、赋值表达式和其他值仍检查。
+  text[keyStart - 1] === '"' &&
+  /^"[ \t]*:[ \t\r\n]*$/u.test(text.slice(keyStart + key.length, valueStart)) &&
+  /^(?:get|post|put|patch|delete|head|options)Api[A-Z0-9_][A-Za-z0-9_]*$/u.test(
+    key,
+  ) &&
+  /^"(?:data|raw|response|empty)"[ \t]*(?=[,}\r\n]|$)/u.test(
+    text.slice(valueStart),
+  );
+
 /** 无法确定凭据边界时停止发送。 */
 const ambiguousSecret = (): never => {
   throw new GcommitError(
@@ -82,7 +99,9 @@ const secretValues = (text: string, fragment: boolean = false): string[] => {
       addValue(values, match[1] ?? match[0]);
   }
   for (const match of text.matchAll(ASSIGNMENT)) {
-    if (!SECRET_KEY.test(match[1] ?? '')) continue;
+    // 正则捕获的候选凭据字段名。
+    const key: string = match[1] ?? '';
+    if (!SECRET_KEY.test(key)) continue;
     let start: number = match.index + match[0].length;
     while (start < text.length && /\s/u.test(text[start] ?? '')) start++;
     // TypeScript/Kotlin 的简单类型注解不属于凭据值。
@@ -92,6 +111,7 @@ const secretValues = (text: string, fragment: boolean = false): string[] => {
       )?.[0];
     if (annotation !== undefined) start += annotation.length;
     while (start < text.length && /\s/u.test(text[start] ?? '')) start++;
+    if (isOperationMode(text, key, match.index, start)) continue;
     const quote: string = text[start] ?? '';
     if (quote === '|' || quote === '>') {
       try {
@@ -163,7 +183,7 @@ export interface SecretFilter {
   readonly changed: boolean;
   /** 替换已识别的秘密。 */
   redact: (text: string) => string;
-  /** 检查输出是否包含已知或新出现的凭据。 */
+  /** 检测文本是否包含已知或新出现的凭据，不用于拦截提交建议。 */
   isUnsafe: (text: string) => boolean;
 }
 

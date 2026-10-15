@@ -23,6 +23,7 @@ import {
 } from './profile.js';
 import {
   decodeCodexText,
+  describeResponseIssue,
   readCodexResult,
   validateCodexEvents,
 } from './response.js';
@@ -170,7 +171,7 @@ export const runCodex = async <Schema extends z.ZodType>(
     if (!validated.success)
       throw new GcommitError(
         'CODEX_RESPONSE_INVALID',
-        'Codex 返回的结果不符合响应规则。',
+        `Codex 返回的结果不符合响应规则：${describeResponseIssue(validated.error.issues[0])}，已丢弃结果。`,
       );
     return validated.data;
   } catch (error: unknown) {

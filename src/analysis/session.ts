@@ -108,7 +108,7 @@ export const createAnalysisSession = async (
         config,
         options,
       );
-      const suggestion = validateSuggestion(response, config, prepared.filter);
+      const suggestion = validateSuggestion(response, config);
       await assertUnchanged();
       reportProgress(options.onProgress, {
         type: 'finished',
@@ -144,12 +144,11 @@ export const createAnalysisSession = async (
                   .filter((line) => line.trim() !== ''),
         },
         config,
-        state.prepared.filter,
       );
     } catch {
       throw new GcommitError(
         'INTERACTION_EDIT_INVALID',
-        '标题或正文无效：请检查提交格式、长度、空行、控制字符及敏感内容。原建议已保留。',
+        '标题或正文无效：请检查提交格式、长度、空行或控制字符。原建议已保留。',
       );
     }
   };

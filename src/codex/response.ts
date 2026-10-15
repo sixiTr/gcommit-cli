@@ -157,3 +157,36 @@ export const validateCodexEvents = (text: string, output: string): void => {
       'Codex 建议消息与结果文件不一致，未采用本次结果。',
     );
 };
+
+/** 用固定字段名描述结构错误，不回显字段值、未知键名或 Zod 原始消息。 */
+export const describeResponseIssue = (
+  issue: z.core.$ZodIssue | undefined,
+): string => {
+  // 只允许输出协议内的固定字段名和有界正文序号。
+  const field: PropertyKey | undefined = issue?.path[0];
+  const index: PropertyKey | undefined = issue?.path[1];
+  const label: string =
+    field === 'subject'
+      ? '标题（subject）'
+      : field === 'scope'
+        ? 'scope'
+        : field === 'format'
+          ? 'format'
+          : field === 'type'
+            ? 'type'
+            : field === 'body'
+              ? typeof index === 'number' &&
+                Number.isInteger(index) &&
+                index >= 0 &&
+                index < 8
+                ? `正文第 ${index + 1} 条`
+                : '正文（body）'
+              : '响应';
+  if (issue?.code === 'unrecognized_keys') return '响应含未允许的额外字段';
+  if (issue?.code === 'too_big')
+    return `${label}超过 ${issue.maximum} ${issue.origin === 'array' ? '条' : '字符'}上限`;
+  if (issue?.code === 'too_small') return `${label}不能为空`;
+  if (issue?.code === 'invalid_type') return `${label}缺失或类型不正确`;
+  if (issue?.code === 'invalid_value') return `${label}不是允许的选项`;
+  return `${label}不符合响应结构规则`;
+};

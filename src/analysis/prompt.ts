@@ -37,7 +37,7 @@ export interface PreparedAnalysis {
   prompt: string;
   /** 本地展示的覆盖信息。 */
   coverage: AnalysisCoverage;
-  /** 检测响应秘密的本地过滤器。 */
+  /** 过滤待发送上下文和展示路径的本地过滤器。 */
   filter: SecretFilter;
   /** 已脱敏、转义并裁剪相同行的本地净变化视图。 */
   diff: string;
@@ -100,20 +100,6 @@ export const prepareAnalysis = async (
       'ANALYSIS_SENSITIVE_FILE',
       '存在新增或修改的敏感文件，已停止分析。过滤 AI 上下文不等于排除 Git 提交；请先检查并移出本次变更。',
     );
-  const filter: SecretFilter = createSecretFilter(
-    [
-      ...context.history.map((entry) => entry.subject),
-      ...context.netChanges.flatMap((change) => [
-        change.path,
-        change.before?.content ?? '',
-        change.after?.content ?? '',
-      ]),
-    ],
-    [
-      context.stagedDiff.toString('utf8'),
-      context.unstagedDiff.toString('utf8'),
-    ],
-  );
   // 上一版只取协议字段，并重新校验，不把拼接消息或其他字段带入 Prompt。
   const previousSuggestion =
     previous === undefined
@@ -127,8 +113,31 @@ export const prepareAnalysis = async (
             body: previous.body,
           },
           config,
-          filter,
         );
+  const filter: SecretFilter = createSecretFilter(
+    [
+      ...context.history.map((entry) => entry.subject),
+      ...context.netChanges.flatMap((change) => [
+        change.path,
+        change.before?.content ?? '',
+        change.after?.content ?? '',
+      ]),
+      // 上一版可能包含模型返回或人工输入的凭据，再次发送前一并过滤。
+      ...(previousSuggestion === undefined
+        ? []
+        : [
+            previousSuggestion.subject,
+            ...previousSuggestion.body,
+            ...(previousSuggestion.scope === null
+              ? []
+              : [previousSuggestion.scope]),
+          ]),
+    ],
+    [
+      context.stagedDiff.toString('utf8'),
+      context.unstagedDiff.toString('utf8'),
+    ],
+  );
   const diff: string[] = [
     '净变化 Diff（HEAD → 当前工作树，脱敏后的 unified diff 变更块）',
     '每行内容使用 JSON 字符串转义；- 为删除，+ 为新增，空格为未变行。',
@@ -212,9 +221,14 @@ export const prepareAnalysis = async (
             previousSuggestion: {
               format: previousSuggestion.format,
               type: previousSuggestion.type,
-              scope: previousSuggestion.scope,
-              subject: previousSuggestion.subject,
-              body: previousSuggestion.body,
+              scope:
+                previousSuggestion.scope === null
+                  ? null
+                  : filter.redact(previousSuggestion.scope),
+              subject: filter.redact(previousSuggestion.subject),
+              body: previousSuggestion.body.map((line: string): string =>
+                filter.redact(line),
+              ),
             },
           }),
       files: promptFiles,

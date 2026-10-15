@@ -130,8 +130,11 @@ export const recoveryAdvice = (error: unknown): readonly string[] => {
       return [
         '检查本机 Codex 登录、网络、服务与模型配置后自行重新生成；gcommit 不会额外发起分析请求。',
       ];
-    case 'CODEX_RESPONSE_INVALID':
     case 'ANALYSIS_RESPONSE_INVALID':
+      return [
+        '按上方字段位置与校验规则检查问题；可自行重新生成，若重复失败请提供错误类别与规则。工具不回显原始响应，也不会自动重试。',
+      ];
+    case 'CODEX_RESPONSE_INVALID':
     case 'CODEX_OUTPUT_LIMIT':
     case 'PROCESS_OUTPUT_LIMIT':
       return [

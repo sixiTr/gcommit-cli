@@ -7,7 +7,7 @@ import { assertGitContextUnchanged } from '../git/context.js';
 import { commitSnapshot } from '../git/commit.js';
 import type { CommitReceipt } from '../git/commit.js';
 
-/** 不含原始秘密的最终确认界面数据。 */
+/** 分支与路径经过过滤、提交消息保留人工审核内容的最终确认数据。 */
 export interface CommitPreview {
   /** 已过滤、转义的分支名。 */
   branch: string;

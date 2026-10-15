@@ -1,6 +1,6 @@
 {
   "name": "gcommit-cli",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "通过本机 Codex CLI 生成 Git 提交建议的独立命令行工具",
   "private": true,
   "license": "UNLICENSED",
